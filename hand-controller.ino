@@ -2,30 +2,29 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
+// Firebase Connection
+#include <ArduinoJson.h>
+#include <IOXhop_FirebaseESP32.h>
+
+#define WIFI_SSID "WIFI ALUNOS"
+#define WIFI_PASSWORD "200897"
+#define FIREBASE_HOST "https://myhand-ff333-default-rtdb.firebaseio.com/"
+#define FIREBASE_AUTH "uOuUtvTjq9B8YfWdX3ZhCoWoMguUIPfm9wZWYKVu"
+// Firebase Connection
+
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
-
-#include <SoftwareSerial.h>
-
-SoftwareSerial console(10, 11); // RX, TX
 
 //Defines para funcionamento do shield
 #define SERVOMIN  100
 #define SERVOMAX  555
 #define Frequency 50
 
-//defines para uso dos dedos
-#define mindinho 7
-#define anelar 3
-#define meio 2
-#define indicador 1
-#define polegar 0
-
 //protótipos das funções de controle dos dedos
-void writeServo(int position, int tempo);
-void beginServos();
+// void writeServo(int position, int tempo);
+// void beginServos();
 
 //parte do shield
-#include<Servo.h>
+// #include<Servo.h>
 
 #define numOfValuesReceived 5
 #define digitsPerValuesReceived 1
@@ -39,12 +38,32 @@ String receivedString;
 
 void setup() {
   Serial.begin(9600);
-  console.begin(57600);
-  beginServos();
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  Serial.print("Conectando ao wifi");
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(300);
+  }
+
+  Serial.println();
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+
+  // beginServos();
 }
 
 void receiveData(){
-    // change serial to data via firebase
+    // TODO: Use this consts to manipulate the robot hand
+    float polegar = Firebase.getFloat("/mao/polegar");
+    float indicador = Firebase.getFloat("/mao/indicador");
+    float maior = Firebase.getFloat("/mao/maior");
+    float anelar = Firebase.getFloat("/mao/anelar");
+    float mindinho = Firebase.getFloat("/mao/mindinho");
+
+    // TODO: change serial to data via firebase
     while(Serial.available()){
         char serialContent = Serial.read();
         if(serialContent == '$') {
@@ -80,7 +99,7 @@ void loop() {
   delay(400);
   */
   for(int position = 0; position < 130; position++){
-    writeServo(mindinho, position);
+    // writeServo(mindinho, position);
     delay(10);  
   }
 }
